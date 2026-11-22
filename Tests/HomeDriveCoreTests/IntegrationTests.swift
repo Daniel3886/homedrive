@@ -185,9 +185,9 @@ import Testing
     }
 
     @Test func cancellingADownloadLeavesNothingBehind() async throws {
-        // A "remote" command that streams forever; cancelling must stop it and clean up.
+        // A "remote" command that never finishes; cancelling must stop both sides and clean up.
         let ssh = sandbox.url.appendingPathComponent("slow-ssh")
-        try "#!/bin/sh\nexec cat /dev/zero\n".write(to: ssh, atomically: true, encoding: .utf8)
+        try "#!/bin/sh\nexec sleep 30\n".write(to: ssh, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: ssh.path)
         let slow = TransferEngine(builder: SSHCommandBuilder(settings: ConnectionSettings(host: "x"),
                                                              sshExecutable: ssh.path))
