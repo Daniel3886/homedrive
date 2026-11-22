@@ -71,33 +71,25 @@ public struct ProcessRunner: CommandRunning {
                     return
                 }
                 if cancelled.value { process.terminate() }
-                let group = DispatchGroup()
-                let out = DataBox()
-                let err = DataBox()
-                group.enter()
-                DispatchQueue.global().async {
-                    out.data = outPipe.fileHandleForReading.readDataToEndOfFile()
-                    group.leave()
-                }
-                group.enter()
-                DispatchQueue.global().async {
-                    err.data = errPipe.fileHandleForReading.readDataToEndOfFile()
-                    group.leave()
-                }
+                // Blocking reads run on their own threads, not GCD: many parallel commands
+                // could otherwise use up the global queue's thread pool and deadlock.
+                let out = BackgroundRead(outPipe.fileHandleForReading)
+                let err = BackgroundRead(errPipe.fileHandleForReading)
                 if let inPipe, let stdin {
-                    DispatchQueue.global().async {
+                    Thread.detachNewThread {
                         try? inPipe.fileHandleForWriting.write(contentsOf: stdin)
                         try? inPipe.fileHandleForWriting.close()
                     }
                 }
-                DispatchQueue.global().async {
-                    group.wait()
+                Thread.detachNewThread {
+                    let stdout = out.wait()
+                    let stderr = err.wait()
                     process.waitUntilExit()
                     if cancelled.value {
                         continuation.resume(throwing: CancellationError())
                     } else {
                         continuation.resume(returning: CommandResult(
-                            status: process.terminationStatus, stdout: out.data, stderr: err.data))
+                            status: process.terminationStatus, stdout: stdout, stderr: stderr))
                     }
                 }
             }
@@ -139,9 +131,24 @@ extension ProcessRunner {
     }
 }
 
-/// Mutable holder used to hand data back from a background queue.
-final class DataBox: @unchecked Sendable {
-    var data = Data()
+/// Reads a file handle to end-of-file on a dedicated thread.
+final class BackgroundRead: @unchecked Sendable {
+    private var data = Data()
+    private let done = DispatchSemaphore(value: 0)
+
+    init(_ handle: FileHandle) {
+        Thread.detachNewThread { [self] in
+            data = handle.readDataToEndOfFile()
+            done.signal()
+        }
+    }
+
+    /// Blocks until end-of-file and returns everything read.
+    func wait() -> Data {
+        done.wait()
+        done.signal()   // allow repeated calls
+        return data
+    }
 }
 
 /// Thread-safe one-way boolean.

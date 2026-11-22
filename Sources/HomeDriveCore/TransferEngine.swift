@@ -140,29 +140,25 @@ public enum PipeTransfer {
         c.standardError = cErr
 
         let cancelled = Flag()
+        let launched = LaunchedProcesses()
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Result, Error>) in
                 do {
                     try c.run()
+                    launched.add(c.processIdentifier)
                     do { try p.run() } catch {
-                        c.terminate()
+                        launched.terminateAll()
                         throw error
                     }
+                    launched.add(p.processIdentifier)
                 } catch {
                     continuation.resume(throwing: error)
                     return
                 }
-                if cancelled.value { p.terminate(); c.terminate() }
+                if cancelled.value { launched.terminateAll() }
 
-                let pErrBox = DataBox(), cErrBox = DataBox()
-                let group = DispatchGroup()
-                for (pipe, box) in [(pErr, pErrBox), (cErr, cErrBox)] {
-                    group.enter()
-                    DispatchQueue.global().async {
-                        box.data = pipe.fileHandleForReading.readDataToEndOfFile()
-                        group.leave()
-                    }
-                }
+                let pErrRead = BackgroundRead(pErr.fileHandleForReading)
+                let cErrRead = BackgroundRead(cErr.fileHandleForReading)
 
                 // The pump: a dedicated thread, since it blocks on reads for the whole transfer.
                 let thread = Thread {
@@ -180,7 +176,7 @@ public enum PipeTransfer {
                             try writer.write(contentsOf: chunk)
                         } catch {
                             // Consumer went away (EPIPE). Stop the producer too.
-                            p.terminate()
+                            launched.terminate(p.processIdentifier)
                             break
                         }
                         total += Int64(chunk.count)
@@ -194,15 +190,17 @@ public enum PipeTransfer {
                     try? reader.close()
                     p.waitUntilExit()
                     c.waitUntilExit()
-                    group.wait()
+                    launched.clear()
+                    let pStderr = pErrRead.wait()
+                    let cStderr = cErrRead.wait()
                     progress(total)
                     if cancelled.value {
                         continuation.resume(throwing: CancellationError())
                         return
                     }
                     continuation.resume(returning: Result(
-                        producer: CommandResult(status: p.terminationStatus, stderr: pErrBox.data),
-                        consumer: CommandResult(status: c.terminationStatus, stderr: cErrBox.data),
+                        producer: CommandResult(status: p.terminationStatus, stderr: pStderr),
+                        consumer: CommandResult(status: c.terminationStatus, stderr: cStderr),
                         bytes: total))
                 }
                 thread.name = "HomeDrive transfer"
@@ -210,9 +208,37 @@ public enum PipeTransfer {
             }
         } onCancel: {
             cancelled.set()
-            if p.isRunning { p.terminate() }
-            if c.isRunning { c.terminate() }
+            launched.terminateAll()
         }
+    }
+
+    /// PIDs we started and haven't reaped yet. Signalling PIDs directly (instead of relying on
+    /// `Process.isRunning`/`terminate()`) behaves the same on macOS and Linux, from any thread.
+    final class LaunchedProcesses: @unchecked Sendable {
+        private let lock = NSLock()
+        private var pids: [Int32] = []
+
+        #if os(Linux)
+        // swift-corelibs-foundation starts children with SIGTERM blocked, so only SIGKILL works.
+        private let stopSignal = SIGKILL
+        #else
+        private let stopSignal = SIGTERM
+        #endif
+
+        func add(_ pid: Int32) { lock.lock(); pids.append(pid); lock.unlock() }
+
+        func terminate(_ pid: Int32) {
+            lock.lock(); defer { lock.unlock() }
+            if pids.contains(pid) { kill(pid, stopSignal) }
+        }
+
+        func terminateAll() {
+            lock.lock(); defer { lock.unlock() }
+            for pid in pids { kill(pid, stopSignal) }
+        }
+
+        /// Called once both processes have exited, so their PIDs can't be reused by accident.
+        func clear() { lock.lock(); pids = []; lock.unlock() }
     }
 
     private static func makeProcess(_ endpoint: PipeEndpoint) -> Process {
