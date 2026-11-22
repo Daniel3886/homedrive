@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Core library + integration tests against GNU find/tar (what the Linux PC uses).
+  # Linux runners are the cheap ones, so this runs on every push and PR.
+  linux-tests:
+    runs-on: ubuntu-latest
+    container: swift:6.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: swift test
+
+  # Builds the app and runs the tests with the BSD tools on macOS.
+  # macOS minutes are billed at 10x on private repos, so only for main and manual runs.
+  macos:
+    if: github.event_name != 'pull_request'
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: ./scripts/test.sh
+      - name: Build app bundle
+        run: ./scripts/build-app.sh
