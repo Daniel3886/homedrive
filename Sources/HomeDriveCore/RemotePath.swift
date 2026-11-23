@@ -65,6 +65,21 @@ public enum RemotePath {
         return path
     }
 
+    /// Expands a leading `~` against `home`: `~/Documents` → `/home/me/Documents`.
+    public static func expandTilde(_ path: String, home: String) -> String {
+        if path == "~" { return home }
+        if path.hasPrefix("~/") { return join(home, String(path.dropFirst(2))) }
+        return path
+    }
+
+    /// Breadcrumbs, starting at `home` (shown as `~`) when the path is inside it.
+    public static func breadcrumbs(_ path: String, home: String?) -> [(name: String, path: String)] {
+        let all = breadcrumbs(path)
+        guard let home, home != "/",
+              let start = all.firstIndex(where: { $0.path == normalize(home) }) else { return all }
+        return all[start...].enumerated().map { index, crumb in index == 0 ? ("~", crumb.path) : crumb }
+    }
+
     /// Is `name` acceptable as a single file or folder name?
     public static func isValidName(_ name: String) -> Bool {
         !name.isEmpty && name != "." && name != ".." && !name.contains("/") && !name.contains("\0")

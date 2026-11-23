@@ -64,10 +64,9 @@ final class AppModel {
             guard let self else { return [] }
             return try await self.remote.list(path)
         }
-        let start = settings.localStartPath.isEmpty
-            ? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads").path
-            : (settings.localStartPath as NSString).expandingTildeInPath
-        mac.navigate(to: FileManager.default.fileExists(atPath: start) ? start : NSHomeDirectory())
+        let local = settings.localStartPath.trimmingCharacters(in: .whitespaces)
+        let start = RemotePath.expandTilde(local.isEmpty ? "~/Downloads" : local, home: macHome)
+        mac.navigate(to: FileManager.default.fileExists(atPath: start) ? start : macHome)
     }
 
     // MARK: Services
@@ -79,6 +78,21 @@ final class AppModel {
     var engine: TransferEngine { TransferEngine(builder: builder) }
 
     var isConnected: Bool { connection.info != nil }
+
+    /// The Mac home folder, for `~` in paths and the Places menu.
+    var macHome: String { Self.debugOverride("HOMEDRIVE_DEBUG_MAC_HOME") ?? NSHomeDirectory() }
+
+    /// This Mac's name as shown in the Mac pane header.
+    var macName: String { Self.debugOverride("HOMEDRIVE_DEBUG_MAC_NAME") ?? Host.current().localizedName ?? "" }
+
+    /// Debug builds only: lets the screenshot setup (docs/DEVELOPMENT.md) stage a demo Mac.
+    static func debugOverride(_ key: String) -> String? {
+        #if DEBUG
+        return env[key]
+        #else
+        return nil
+        #endif
+    }
     var remoteInfo: RemoteSystemInfo? { connection.info }
 
     var pcDisplayName: String {
@@ -103,7 +117,7 @@ final class AppModel {
                 connection = .connected(info)
                 let start = settings.remoteStartPath.trimmingCharacters(in: .whitespaces)
                 pc.reset()
-                pc.navigate(to: start.isEmpty ? info.home : start)
+                pc.navigate(to: start.isEmpty ? info.home : RemotePath.expandTilde(start, home: info.home))
             } catch is CancellationError {
                 connection = .disconnected
             } catch {
@@ -156,7 +170,7 @@ final class AppModel {
     // MARK: Places
 
     var macPlaces: [(name: String, path: String, symbol: String)] {
-        let home = NSHomeDirectory()
+        let home = macHome
         return [
             ("Home", home, "house"),
             ("Desktop", home + "/Desktop", "menubar.dock.rectangle"),
@@ -444,7 +458,7 @@ final class AppModel {
     }
 
     func displayPath(mac path: String) -> String {
-        RemotePath.abbreviate(path, home: NSHomeDirectory())
+        RemotePath.abbreviate(path, home: macHome)
     }
 
     func updateDockBadge() {

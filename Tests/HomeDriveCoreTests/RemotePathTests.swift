@@ -30,6 +30,22 @@ import Testing
         #expect(crumbs.map(\.path) == ["/", "/home", "/home/me"])
     }
 
+    @Test func breadcrumbsFromHome() {
+        let crumbs = RemotePath.breadcrumbs("/home/me/Documents/Taxes", home: "/home/me")
+        #expect(crumbs.map(\.name) == ["~", "Documents", "Taxes"])
+        #expect(crumbs.map(\.path) == ["/home/me", "/home/me/Documents", "/home/me/Documents/Taxes"])
+        #expect(RemotePath.breadcrumbs("/etc/ssh", home: "/home/me").map(\.name) == ["/", "etc", "ssh"])
+        #expect(RemotePath.breadcrumbs("/home/meow", home: "/home/me").map(\.name) == ["/", "home", "meow"])
+        #expect(RemotePath.breadcrumbs("/x", home: nil).map(\.name) == ["/", "x"])
+    }
+
+    @Test func expandTilde() {
+        #expect(RemotePath.expandTilde("~/Documents", home: "/home/me") == "/home/me/Documents")
+        #expect(RemotePath.expandTilde("~", home: "/home/me") == "/home/me")
+        #expect(RemotePath.expandTilde("/srv/media", home: "/home/me") == "/srv/media")
+        #expect(RemotePath.expandTilde("~other/x", home: "/home/me") == "~other/x")
+    }
+
     @Test func abbreviate() {
         #expect(RemotePath.abbreviate("/home/me/Documents", home: "/home/me") == "~/Documents")
         #expect(RemotePath.abbreviate("/home/me", home: "/home/me") == "~")

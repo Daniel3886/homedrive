@@ -51,7 +51,7 @@ struct SettingsView: View {
                 }
 
                 Section("Folders") {
-                    TextField("Start on PC in", text: $draft.remoteStartPath, prompt: Text("home folder"))
+                    TextField("Start on PC in", text: $draft.remoteStartPath, prompt: Text("~ (home folder), or e.g. ~/Documents"))
                     HStack {
                         TextField("Start on Mac in", text: $draft.localStartPath, prompt: Text("~/Downloads"))
                         Button("Choose…") { chooseLocalStart() }
@@ -157,7 +157,7 @@ struct SettingsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         if panel.runModal() == .OK, let url = panel.url {
-            draft.localStartPath = RemotePath.abbreviate(url.path, home: NSHomeDirectory())
+            draft.localStartPath = RemotePath.abbreviate(url.path, home: app.macHome)
         }
     }
 }

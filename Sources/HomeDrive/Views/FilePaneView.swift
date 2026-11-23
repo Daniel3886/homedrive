@@ -79,7 +79,7 @@ struct FilePaneView: View {
                     if isPC, let os = app.remoteInfo?.os {
                         Text(os).font(.caption).foregroundStyle(.secondary)
                     } else if !isPC {
-                        Text(Host.current().localizedName ?? "").font(.caption).foregroundStyle(.secondary)
+                        Text(app.macName).font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
@@ -134,12 +134,12 @@ struct FilePaneView: View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 2) {
-                    let crumbs = RemotePath.breadcrumbs(pane.path)
+                    let crumbs = RemotePath.breadcrumbs(pane.path, home: homePath)
                     ForEach(Array(crumbs.enumerated()), id: \.offset) { index, crumb in
                         if index > 0 {
                             Image(systemName: "chevron.compact.right").foregroundStyle(.tertiary)
                         }
-                        Button(crumbLabel(crumb)) { pane.navigate(to: crumb.path) }
+                        Button(crumb.name) { pane.navigate(to: crumb.path) }
                             .buttonStyle(.borderless)
                             .foregroundStyle(index == crumbs.count - 1 ? .primary : .secondary)
                             .lineLimit(1)
@@ -149,15 +149,13 @@ struct FilePaneView: View {
                 .font(.callout)
             }
             .onChange(of: pane.path) { _, _ in
-                proxy.scrollTo(RemotePath.breadcrumbs(pane.path).count - 1, anchor: .trailing)
+                proxy.scrollTo(RemotePath.breadcrumbs(pane.path, home: homePath).count - 1, anchor: .trailing)
             }
         }
     }
 
-    private func crumbLabel(_ crumb: (name: String, path: String)) -> String {
-        let home = isPC ? app.remoteInfo?.home : NSHomeDirectory()
-        if crumb.path == home { return "~" }
-        return crumb.name
+    private var homePath: String? {
+        isPC ? app.remoteInfo?.home : app.macHome
     }
 
     // MARK: Content

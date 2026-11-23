@@ -31,9 +31,15 @@ struct TransfersView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List {
-                    ForEach(queue.items.reversed()) { transfer in
-                        TransferRow(transfer: transfer)
+                ScrollViewReader { proxy in
+                    List {
+                        ForEach(queue.items.reversed()) { transfer in
+                            TransferRow(transfer: transfer).id(transfer.id)
+                        }
+                    }
+                    // Newest transfers are on top; keep them in view as they're added.
+                    .onChange(of: queue.items.count) { _, _ in
+                        if let newest = queue.items.last { proxy.scrollTo(newest.id, anchor: .top) }
                     }
                 }
                 .listStyle(.inset)
@@ -50,8 +56,9 @@ private struct TransferRow: View {
         HStack(spacing: 10) {
             Image(systemName: transfer.direction == .upload ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .font(.title2)
-                .foregroundStyle(transfer.direction == .upload ? Color.orange : Color.accentColor)
+                .foregroundStyle(transfer.direction == .upload ? Color.orange : Color.blue)
             VStack(alignment: .leading, spacing: 3) {
+                let tint: Color = transfer.direction == .upload ? .orange : .blue
                 HStack {
                     Text(transfer.name).lineLimit(1).truncationMode(.middle)
                     Text(transfer.direction == .upload ? "→ PC \(transfer.destination)" : "→ Mac \(transfer.destination)")
@@ -61,13 +68,13 @@ private struct TransferRow: View {
                 }
                 switch transfer.state {
                 case .queued:
-                    ProgressView(value: 0).progressViewStyle(.linear)
+                    ProgressView(value: 0).progressViewStyle(.linear).tint(tint)
                     detail("Waiting…")
                 case .running:
                     if let fraction = transfer.fraction {
-                        ProgressView(value: fraction).progressViewStyle(.linear)
+                        ProgressView(value: fraction).progressViewStyle(.linear).tint(tint)
                     } else {
-                        ProgressView().progressViewStyle(.linear)
+                        ProgressView().progressViewStyle(.linear).tint(tint)
                     }
                     detail(runningDetail)
                 case .done:

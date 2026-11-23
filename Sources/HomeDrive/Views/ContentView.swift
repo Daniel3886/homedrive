@@ -1,3 +1,4 @@
+import AppKit
 import HomeDriveCore
 import SwiftUI
 
@@ -10,10 +11,10 @@ struct ContentView: View {
         VSplitView {
             HSplitView {
                 FilePaneView(pane: app.mac)
-                    .frame(minWidth: 320, maxWidth: .infinity)
+                    .frame(minWidth: 320, idealWidth: 560, maxWidth: .infinity)
                 transferButtons
                 FilePaneView(pane: app.pc)
-                    .frame(minWidth: 320, maxWidth: .infinity)
+                    .frame(minWidth: 320, idealWidth: 560, maxWidth: .infinity)
             }
             .frame(minHeight: 300, maxHeight: .infinity)
             TransfersView()
@@ -37,6 +38,12 @@ struct ContentView: View {
             Text(conflictMessage)
         }
         .onAppear {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(150))
+                let window = NSApp.windows.first { $0.isVisible && $0.sheetParent == nil }
+                WindowLayout.balancePanes(in: window)
+                WindowLayout.focusFirstTable(in: window)
+            }
             if !app.settings.isConfigured {
                 app.showSettings = true
             } else if !app.isConnected {
