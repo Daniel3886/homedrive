@@ -10,13 +10,14 @@ Sources/
     HomeDriveApp.swift        App, menus, AppDelegate (quit guard, closes SSH master)
     Models/                   AppModel, PaneModel, TransferQueue
     Views/                    ContentView, FilePaneView, TransfersView, SettingsView
-    DebugSnapshot.swift       debug-only window-to-PNG helper
+    DebugSnapshot.swift       debug-only screenshot staging/capture
 Tests/HomeDriveCoreTests/     Swift Testing suites
 scripts/
   test.sh                     runs the tests (handles Command Line Tools quirks)
   build-app.sh                builds dist/HomeDrive.app (+ --install)
   make-icon.swift             draws the app icon
-docs/                         ARCHITECTURE.md, this file
+  screenshots.sh              regenerates docs/images (icon + real app screenshots)
+docs/                         ARCHITECTURE.md, this file, images/ (icon + screenshots)
 .github/workflows/ci.yml      Linux tests on every push, macOS build on main
 ```
 
@@ -81,7 +82,17 @@ HOMEDRIVE_SSH=/tmp/hd/fake-ssh HOMEDRIVE_SETTINGS_KEY=demo swift run HomeDrive
 # In Settings use any host name, "Start on PC in" = /tmp/hd/pc, "Start on Mac in" = /tmp/hd/mac
 ```
 
-Debug builds also support `HOMEDRIVE_SNAPSHOT=/tmp/shot`, which renders the window to `/tmp/shot-N.png` without needing Screen Recording permission. Add `HOMEDRIVE_SNAPSHOT_DEMO=1` to also send and retrieve an item and capture the Settings sheet.
+## Icon and screenshots
+
+```sh
+./scripts/screenshots.sh
+```
+
+This regenerates everything in `docs/images/`: the icon (drawn in code by `scripts/make-icon.swift`; `build-app.sh` uses the same script for the app's `.icns`) and real screenshots of the app in light and dark mode.
+
+The screenshots are taken against a staged demo, never your own files. The script builds a fake Mac home and a fake PC (`ubuntu-pc`, user `daniel`, with stand-ins for `hostname`, `uname` and `df`) under `/tmp/homedrive-demo`. It points the app at a fake ssh that throttles to about 1 MB/s, so uploads are still mid-way when the picture is taken. The debug-only `DebugSnapshot` then retrieves one file, sends two items, and captures the main window and the Settings sheet.
+
+Captures go through the window server for **HomeDrive's own windows only**, which needs no Screen Recording permission. Don't widen this to "windows above" or the whole screen: that would pull in whatever else is on the display.
 
 ## Releasing a build
 

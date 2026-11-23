@@ -1,22 +1,18 @@
-# HomeDrive
+<p align="center">
+  <img src="docs/images/icon.png" width="128" height="128" alt="HomeDrive icon">
+</p>
 
-Your own little iCloud Drive: a native macOS app for moving files between your Mac and your Linux PC over SSH. You don't have to open a terminal.
+<h1 align="center">HomeDrive</h1>
 
-```
-┌──────────────── HomeDrive ──────────────────────────────────────────┐
-│ ● ubuntu-pc                                    ⏻ Disconnect  ⟳  ⚙   │
-├─────────────────────────────┬──────┬────────────────────────────────┤
-│ 💻 This Mac        ☆ Places │      │ 🖥 ubuntu-pc         ☆ Places │
-│ ‹ ↑  / Users › me › Downloads│  ➡  │ ‹ ↑  ~ › Documents             │
-│ 📁 Photos 2026               │ Send │ 📁 Projects                    │
-│ 📄 todo.md                   │      │ 📄 thesis.pdf          2.4 MB  │
-│ 🎬 vacation video.mov  5 MB  │  ⬅  │ 📄 meeting notes.txt           │
-│                              │Retrieve                               │
-├─────────────────────────────┴──────┴────────────────────────────────┤
-│ Transfers                                          Clear Finished   │
-│ ⬆ vacation video.mov → PC ~/Documents  ███████░░  3.6 of 5 MB · 42 MB/s │
-└─────────────────────────────────────────────────────────────────────┘
-```
+<p align="center">
+  Your own little iCloud Drive: a native macOS app for moving files between your Mac and your Linux PC over SSH.<br>
+  You don't have to open a terminal.
+</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/screenshot-dark.png">
+  <img src="docs/images/screenshot-light.png" alt="HomeDrive: this Mac on the left, the Linux PC on the right, uploads in progress underneath">
+</picture>
 
 - **Two panes.** Your Mac on the left, the Linux PC on the right. Browse either one like Finder.
 - **Send ➡ / ⬅ Retrieve.** Select files and press a button (or ⌘→ / ⌘←), or drag them:
@@ -95,6 +91,11 @@ Files always go into the folder currently open on the other side, so navigate th
 
 ## Settings (⌘,)
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
+  <img src="docs/images/settings-light.png" width="460" alt="HomeDrive settings: host, user, port, SSH key, start folders and connection options">
+</picture>
+
 | Setting | Meaning |
 |---|---|
 | Host | `~/.ssh/config` alias, hostname or IP |
@@ -120,9 +121,10 @@ Under the hood every action is a plain `ssh` command. To see exactly what runs, 
 ## Development
 
 ```sh
-./scripts/test.sh          # 55 unit + integration tests (works with Command Line Tools only)
+./scripts/test.sh          # 57 unit + integration tests (works with Command Line Tools only)
 swift run HomeDrive        # run the app from source
 ./scripts/build-app.sh     # build dist/HomeDrive.app
+./scripts/screenshots.sh   # regenerate the icon and screenshots in docs/images
 ```
 
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the project layout, how the tests fake the PC, and how to try the UI without a PC.
