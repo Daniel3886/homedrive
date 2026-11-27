@@ -9,6 +9,10 @@
   You don't have to open a terminal.
 </p>
 
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/screenshot-dark.png">
   <img src="docs/images/screenshot-light.png" alt="HomeDrive: this Mac on the left, the Linux PC on the right, uploads in progress underneath">
@@ -131,4 +135,4 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the project layout, how the t
 
 ## License
 
-Private project, all rights reserved.
+HomeDrive is released under the [MIT License](LICENSE).
