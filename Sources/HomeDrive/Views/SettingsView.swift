@@ -22,7 +22,7 @@ struct SettingsView: View {
             Form {
                 Section {
                     HStack {
-                        TextField("Host", text: $draft.host, prompt: Text("ubuntu-home, 10.77.0.1 or name.duckdns.org"))
+                        TextField("Host", text: $draft.host, prompt: Text("ubuntu-home, 10.77.0.1 or pc.example.com"))
                         if !aliases.isEmpty {
                             Menu {
                                 ForEach(aliases) { alias in
