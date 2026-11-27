@@ -15,6 +15,15 @@ enum WindowLayout {
         split.setPosition(pane + split.dividerThickness + middle, ofDividerAt: 1)
     }
 
+    /// Gives the transfers list a compact default height.
+    /// (`VSplitView` ignores `idealHeight` and hands the list far more room than it needs.)
+    static func sizeTransfers(in window: NSWindow?, height: CGFloat = 180) {
+        guard let root = window?.contentView,
+              let split = find(NSSplitView.self, in: root, where: { !$0.isVertical && $0.arrangedSubviews.count == 2 })
+        else { return }
+        split.setPosition(split.bounds.height - height - split.dividerThickness, ofDividerAt: 0)
+    }
+
     /// Gives keyboard focus to the first file list, so arrow keys work straight away
     /// (and no stray focus ring lands on a toolbar button).
     static func focusFirstTable(in window: NSWindow?) {

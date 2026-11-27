@@ -42,6 +42,7 @@ struct ContentView: View {
                 try? await Task.sleep(for: .milliseconds(150))
                 let window = NSApp.windows.first { $0.isVisible && $0.sheetParent == nil }
                 WindowLayout.balancePanes(in: window)
+                WindowLayout.sizeTransfers(in: window)
                 WindowLayout.focusFirstTable(in: window)
             }
             if !app.settings.isConfigured {

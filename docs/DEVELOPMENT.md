@@ -105,7 +105,7 @@ The version is `0.1.0`; the build number is `git describe`. Tag a release with `
 ## Ideas for later
 
 - Drag from the PC pane straight into Finder (needs `NSFilePromiseProvider`).
-- Several saved PCs / profiles (e.g. WireGuard vs DuckDNS) with automatic fallback.
+- Several saved PCs / profiles (e.g. WireGuard vs a public DNS name) with automatic fallback.
 - Folder sync ("keep ~/Shared in sync with the PC").
 - Thumbnails / Quick Look previews for PC files.
 - Resume interrupted large transfers (`rsync --partial` when the PC has rsync).

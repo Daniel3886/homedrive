@@ -32,6 +32,7 @@ enum DebugSnapshot {
                 window.center()
                 try? await Task.sleep(for: .milliseconds(300))
                 WindowLayout.balancePanes(in: window)
+                WindowLayout.sizeTransfers(in: window)
             }
             try? await Task.sleep(for: .seconds(2.5))
 

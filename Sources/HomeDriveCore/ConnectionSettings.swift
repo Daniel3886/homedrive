@@ -5,7 +5,7 @@ import Foundation
 /// The simplest setup is to put the PC in `~/.ssh/config` (for example `Host ubuntu-home`)
 /// and set `host` to that alias; user, port and key then come from the SSH config.
 public struct ConnectionSettings: Codable, Equatable, Sendable {
-    /// A `~/.ssh/config` alias, a hostname (e.g. `myhome.duckdns.org`) or an IP (e.g. `10.77.0.1`).
+    /// A `~/.ssh/config` alias, a hostname (e.g. `pc.example.com`) or an IP (e.g. `10.77.0.1`).
     public var host: String
     /// Optional user name. Empty means "whatever SSH would use" (config or local user).
     public var user: String

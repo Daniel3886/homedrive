@@ -5,7 +5,7 @@ import Testing
 @Suite struct SSHCommandBuilderTests {
     @Test func destination() {
         #expect(ConnectionSettings(host: "ubuntu-home").destination == "ubuntu-home")
-        #expect(ConnectionSettings(host: " pc.duckdns.org ", user: "me").destination == "me@pc.duckdns.org")
+        #expect(ConnectionSettings(host: " pc.example.com ", user: "me").destination == "me@pc.example.com")
     }
 
     @Test func remoteCommandEndsWithDestinationAndCommand() {

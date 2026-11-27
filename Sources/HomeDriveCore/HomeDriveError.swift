@@ -32,7 +32,7 @@ public enum HomeDriveError: LocalizedError, Equatable {
         if lower.contains("timed out") || lower.contains("no route to host") || lower.contains("network is unreachable") {
             hint = "Is WireGuard connected and the PC turned on?"
         } else if lower.contains("could not resolve hostname") {
-            hint = "The host name couldn't be resolved. Check the host in Settings (or your DuckDNS name)."
+            hint = "The host name couldn't be resolved. Check the host in Settings, and that your DNS name points to the PC."
         } else if lower.contains("connection refused") {
             hint = "The PC is reachable but SSH isn't accepting connections. Is sshd running?"
         } else if lower.contains("permission denied") {

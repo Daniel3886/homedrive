@@ -9,6 +9,10 @@
   You don't have to open a terminal.
 </p>
 
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/screenshot-dark.png">
   <img src="docs/images/screenshot-light.png" alt="HomeDrive: this Mac on the left, the Linux PC on the right, uploads in progress underneath">
@@ -51,7 +55,7 @@ The app is ad-hoc signed, not notarized. If macOS blocks the first launch, right
 
 1. Turn on **WireGuard** (or be on the same network as the PC).
 2. Open HomeDrive. The setup sheet lists the hosts in your `~/.ssh/config`; pick yours (e.g. `ubuntu-home`).
-   You can also type a plain address like `10.77.0.1` or `yourname.duckdns.org` together with a user name.
+   You can also type a plain address like `10.77.0.1` or `pc.example.com` together with a user name.
 3. Click **Test Connection**, then **Save & Connect**.
 
 The first time you open Desktop, Documents or Downloads on the Mac side, macOS asks for permission. Click **Allow**.
@@ -66,9 +70,9 @@ Host ubuntu-home
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 
-# Optional: straight over the internet via DuckDNS (needs port 22 forwarded)
-Host ubuntu-duck
-    HostName yourname.duckdns.org
+# Optional: straight over the internet via your own domain or dynamic DNS name (needs port 22 forwarded)
+Host ubuntu-remote
+    HostName pc.example.com
     User your-linux-user
     IdentityFile ~/.ssh/id_ed25519
 ```
@@ -110,7 +114,7 @@ Files always go into the folder currently open on the other side, so navigate th
 | Message | Fix |
 |---|---|
 | *Is WireGuard connected and the PC turned on?* | Turn on the VPN; check the PC is awake (`ping 10.77.0.1`) |
-| *The host name couldn't be resolved* | Typo in the host, or DuckDNS isn't updating |
+| *The host name couldn't be resolved* | Typo in the host, or your DNS name doesn't point to the PC |
 | *SSH isn't accepting connections* | On the PC: `sudo systemctl status ssh` |
 | *SSH key login was rejected* | Make `ssh <host>` work in Terminal without a password first; see the passphrase note above |
 | *Host key doesn't match* | The PC was reinstalled or its IP points to a different machine. Check, then `ssh-keygen -R <host>` |
@@ -131,4 +135,4 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the project layout, how the t
 
 ## License
 
-Private project, all rights reserved.
+HomeDrive is released under the [MIT License](LICENSE).

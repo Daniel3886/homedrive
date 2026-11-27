@@ -12,7 +12,7 @@ import Testing
             IdentityFile ~/.ssh/id_ed25519
 
         Host pc pc-remote
-          HostName=myhome.duckdns.org
+          HostName=pc.example.com
           Port = 2222
 
         Host *
@@ -24,11 +24,11 @@ import Testing
         let hosts = SSHConfigParser.parse(text)
         #expect(hosts.map(\.alias) == ["ubuntu-home", "pc", "pc-remote"])
         #expect(hosts[0] == SSHHostAlias(alias: "ubuntu-home", hostName: "10.77.0.1", user: "diamondeyes"))
-        #expect(hosts[1].hostName == "myhome.duckdns.org")
+        #expect(hosts[1].hostName == "pc.example.com")
         #expect(hosts[1].port == 2222)
         #expect(hosts[2].port == 2222)
         #expect(hosts[0].summary == "diamondeyes@10.77.0.1")
-        #expect(hosts[1].summary == "myhome.duckdns.org:2222")
+        #expect(hosts[1].summary == "pc.example.com:2222")
     }
 
     @Test func firstValueWinsLikeSSH() {

@@ -5,7 +5,7 @@ import Testing
 @Suite struct ErrorTests {
     @Test(arguments: [
         ("ssh: connect to host 10.77.0.1 port 22: Operation timed out", "WireGuard"),
-        ("ssh: Could not resolve hostname foo.duckdns.org: nodename nor servname provided", "resolved"),
+        ("ssh: Could not resolve hostname foo.example.com: nodename nor servname provided", "resolved"),
         ("ssh: connect to host x port 22: Connection refused", "sshd"),
         ("me@x: Permission denied (publickey).", "key"),
         ("Host key verification failed.", "known_hosts"),
